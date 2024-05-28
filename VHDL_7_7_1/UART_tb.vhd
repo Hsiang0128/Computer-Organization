@@ -52,7 +52,7 @@ ARCHITECTURE behavior OF UART_tb IS
 	
 	signal err : std_logic_vector(2 downto 0);
 
-   constant clk_period : time := 12.5ns;
+   constant clk_period : time := 25 ns;
 	
 	signal flag : std_logic := '0';
 BEGIN
