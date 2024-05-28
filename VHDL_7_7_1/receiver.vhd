@@ -12,10 +12,11 @@ entity receiver is
 		s_tick 			: in std_logic;
 		dnum				: in std_logic;
 		snum				: in std_logic;
+		fifo_full		: in std_logic;
 		par				: in std_logic_vector(1 downto 0);
 		rx_done_tick	: out std_logic;
 		dout 				: out std_logic_vector(7 downto 0);
-		err				: out std_logic_vector(1 downto 0)
+		err				: out std_logic_vector(2 downto 0)
 	);
 end receiver;
 architecture behavior of receiver is
@@ -39,7 +40,7 @@ begin
 		if(reset = '1')then
 			state_reg 	<= IDLE;
 			rx_done_tick <= '0';
-			err <= "00";
+			err <= "000";
 			data_buf <= (others => '0');
 		elsif(clk'event and clk = '1')then
 			tick_tmp <= s_tick;
@@ -70,7 +71,13 @@ begin
 									err(1) <= '0';
 								end if;
 								if(snum = '0')then
-									rx_done_tick <= '1';
+									if(rx = '1')then
+										if(fifo_full = '1')then
+											err(2)<='1';
+										else
+											rx_done_tick <= '1';
+										end if;
+									end if;
 									counter <= 0;
 								else
 									counter <= 1;
@@ -107,7 +114,13 @@ begin
 					if(tick_posedge = '1')then
 						state_reg 	<= STOP;
 						if(snum = '0')then
-							rx_done_tick <= '1';
+							if(rx = '1')then
+								if(fifo_full = '1')then
+									err(2)<='1';
+								else
+									rx_done_tick <= '1';
+								end if;
+							end if;
 							counter <= 0;
 						else
 							counter <= 1;
@@ -117,20 +130,24 @@ begin
 					if(counter = 0)then
 						data_buf <= (others => '0');
 						rx_done_tick <= '0';
-						err <= "00";
 					end if;
 					if(tick_posedge = '1')then
 						if(counter = 0)then
+							err <= "000";
 							if(rx = '0')then
 								state_reg <= START;
 							else
 								state_reg <= IDLE;
 							end if;
 						else
-							rx_done_tick <= '1';
 							if(rx = '0')then
 								err(1) <= '1';
 							else
+								if(fifo_full = '1')then
+									err(2)<='1';
+								else
+									rx_done_tick <= '1';
+								end if;
 								err(1) <= '0';
 							end if;
 							counter <= 0;

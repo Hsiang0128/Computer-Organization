@@ -35,15 +35,15 @@ architecture behavior of UART is
 	signal s_tick		 	: std_logic;
 	signal rx_done_tick 	: std_logic;
 	signal tx_done_tick 	: std_logic;
-	signal err_2			: std_logic;
 	signal rx_data 		: std_logic_vector(DATA_BITS-1 downto 0);
 	signal tx_data			: std_logic_vector(DATA_BITS-1 downto 0);
 	signal tx_empty		: std_logic;
 	signal n_tx_empty		: std_logic;
+	
+	signal fifo_full		: std_logic;
 begin
+	rx_full <= fifo_full;
 	n_tx_empty <= not tx_empty;
-	rx_full <= err_2;
-	err(2) <= err_2;
 	uut_BaudRate_generator: entity work.BaudRate_generator(behavior)
 		GENERIC MAP(
 			CLK_INPUT 	=> CLK_INPUT
@@ -68,7 +68,8 @@ begin
 			 dnum => dnum,
 			 snum => snum,
 			 par => par,
-			 err => err(1 downto 0)
+			 err => err,
+			 fifo_full =>fifo_full
       );
 	uut_rx_fifo: entity work.fifo(behavior)
 		GENERIC MAP(
@@ -82,7 +83,7 @@ begin
 			wr			=> rx_done_tick,
 			w_data	=> rx_data,
 			empty		=> rx_empty,
-			full		=> err_2,
+			full		=> fifo_full,
 			r_data	=> r_data
 		);
 	uut_transmitter: entity work.transmitter(behavior)
