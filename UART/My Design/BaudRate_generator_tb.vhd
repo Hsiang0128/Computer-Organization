@@ -10,7 +10,6 @@ ARCHITECTURE behavior OF BaudRate_generator_tb IS
 	COMPONENT BaudRate_generator
 	port(
 		clk	: in std_logic;
-		bd_rate	: in std_logic_vector(1 downto 0);
 		tick	: out std_logic
 	);
 	END COMPONENT;
@@ -19,17 +18,21 @@ ARCHITECTURE behavior OF BaudRate_generator_tb IS
 	SIGNAL tick	: std_logic;
 BEGIN
 	uut: entity work.BaudRate_generator(behavior)
+
+		GENERIC MAP(
+			CLK_INPUT	=> 50000000,
+ 			BAUD_RATE	=> 19200
+		)
 		PORT MAP(
 			clk => clk,
-			bd_rate =>"11",
 			tick => tick
 		);
   tb : PROCESS
   BEGIN
 	  clk <= '0';
-	  wait for 12.5ps;
+	  wait for 12.5 ps;
 	  clk <= '1';
-	  wait for 12.5ps;
+	  wait for 12.5 ps;
   END PROCESS tb;
 --  End Test Bench 
 
